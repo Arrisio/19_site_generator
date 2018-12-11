@@ -1,14 +1,48 @@
-from livereload import Server
+
+import markdown
+from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+from os import path, listdir
+import sys
+print(sys.version)
+templates_dir = path.join('./templates')
+word_list = ['mama', 'papa']
+
+env = Environment(
+    loader=FileSystemLoader(searchpath='./templates/'),
+    autoescape=True,
+    trim_blocks=False
+)
+
+for file in listdir(templates_dir):
+    print(file)
 
 
-def make_site():
-    # TODO convert markdown to html, create site
-    print(1)
+template = env.get_template('index.html.j2')
 
 
-if __name__ == "__main__":
-    server = Server()
-    server.watch("templates/*.html", make_site)
-    # TODO watch for changes in markdown articles
-server.serve(root="site/")  # folder to serve html files from
+with open('./articles/0_tutorial/14_google.md', 'r', encoding='utf-8') as md_file:
+    md_html = markdown.markdown(md_file.read(), extension='codehilite')
 
+# with open('./templates/layout.html.j2', 'r') as fh_layout_tamplate:
+#     layout_tamplate = env.parse(fh_layout_tamplate.read())
+
+with open('static/index.html', 'w', encoding='utf-8') as index_fh:
+    index_fh.write(template.render(
+        title='Энциклопедия!'
+    ))
+
+
+def markdown_to_html(mdfile):
+    with open(mdfile, 'r', encoding='utf-8') as md_file:
+        html = markdown.markdown(md_file.read(), extension='codehilite')
+        return html
+
+
+article_html = markdown_to_html('./articles/0_tutorial/14_google.md')
+
+with open('static/article.html', 'w', encoding='utf-8') as article_fh:
+    article_fh.write(
+        env.get_template('article.html.j2').render(
+            title='Гугол!',
+            content=article_html
+        ))
